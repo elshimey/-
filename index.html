@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>برنامج إدارة السداد</title>
+    
+    <!-- إعدادات PWA للتطبيق -->
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="برنامج السداد">
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAABCElEQVR4nO2WQQ6DMAwE//+P9gmkF6gQEm1vPSCkSqjqoYd2vY5z7GQnO9nJTnayk53sZCc72clOdrKTnexkJzvZyU52spOd7GQnO9nJTnayk53sZCc72clOdrKTnexkJzvZyU52spOd7GQnO9nJTnayk53sZCc72clOdrKTnexkJzvZyU52spOd7GQnO9nJTnayk53sZCc72clOdrKTnexkJzvZyU52spOd7GQnO9nJTnayk53sZCc72clOdrKTnexkJzvZyU52spOd7GQnO9nJTnayk53sZCc72clOdrKTnexkJzvZyU52spOd7GQnO9nJTnayk53sZCc72clOdrKTnexkJzvZyU52spOd7GQnO9nJTnayk53s5D/JD5J0A9j8ZAAAAAElFTkSuQmCC">
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        body {
+            background: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        .app-container {
+            max-width: 100%;
+            min-height: 100vh;
+            padding: 10px;
+        }
+        
+        .app-header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 20px 15px;
+            text-align: center;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .tabs {
+            display: flex;
+            background: #3498db;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 15px;
+            cursor: pointer;
+            background: #3498db;
+            color: white;
+            border: none;
+            flex: 1;
+            text-align: center;
+            transition: all 0.3s;
+            font-size: 14px;
+            min-width: 90px;
+        }
+        
+        .tab.active {
+            background: #2c3e50;
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: #fafbfc;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            border-color: #3498db;
+            outline: none;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        button.delete {
+            background: #e74c3c;
+        }
+        
+        button.success {
+            background: #27ae60;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        th, td {
+            padding: 12px 10px;
+            text-align: right;
+            border-bottom: 1px solid #e1e8ed;
+        }
+        
+        th {
+            background: #ecf0f1;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 15px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                width: 100%;
+            }
+            
+            th, td {
+                padding: 8px 5px;
+                font-size: 14px;
+            }
+        }
+        
+        /* تحسينات للشاشات الصغيرة */
+        @media (max-width: 480px) {
+            .app-container {
+                padding: 5px;
+            }
+            
+            .tab-content {
+                padding: 15px;
+            }
+            
+            button {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="app-header">
+            <h1>💳 برنامج إدارة السداد</h1>
+            <p>إدارة عملاء - عقود - تحصيلات</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="openTab('clients')">👥 العملاء</button>
+            <button class="tab" onclick="openTab('contracts')">📝 العقود</button>
+            <button class="tab" onclick="openTab('payments')">💰 التحصيل</button>
+            <button class="tab" onclick="openTab('account-statement')">📊 كشف حساب</button>
+        </div>
+        
+        <!-- تبويب العملاء -->
+        <div id="clients" class="tab-content active">
+            <h2>👥 إدارة العملاء</h2>
+            <div class="form-group">
+                <input type="text" id="clientSearch" placeholder="🔍 بحث عن عميل..." onkeyup="searchClients()">
+            </div>
+            
+            <button onclick="showAddClientForm()" class="success">➕ إضافة عميل</button>
+            
+            <div id="addClientForm" style="display: none; margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                <h3>إضافة عميل جديد</h3>
+                <input type="text" id="clientName" placeholder="اسم العميل" required>
+                <input type="text" id="clientPhone" placeholder="رقم الهاتف">
+                <input type="email" id="clientEmail" placeholder="البريد الإلكتروني">
+                <textarea id="clientAddress" placeholder="العنوان" rows="2"></textarea>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button onclick="addClient()" class="success">💾 حفظ</button>
+                    <button onclick="hideAddClientForm()" class="delete">❌ إلغاء</button>
+                </div>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>العميل</th>
+                        <th>الهاتف</th>
+                        <th>الإجراء</th>
+                    </tr>
+                </thead>
+                <tbody id="clientsList"></tbody>
+            </table>
+        </div>
+        
+        <!-- تبويب العقود -->
+        <div id="contracts" class="tab-content">
+            <h2>📝 إدارة العقود</h2>
+            <select id="selectClient" onchange="loadClientContracts()">
+                <option value="">-- اختر عميل --</option>
+            </select>
+            
+            <div style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                <h3>إضافة عقد جديد</h3>
+                <input type="date" id="contractStartDate" required>
+                <input type="date" id="contractEndDate" required>
+                <input type="number" id="totalDebt" placeholder="إجمالي المديونية" required>
+                <select id="paymentFrequency" required>
+                    <option value="monthly">شهري</option>
+                    <option value="quarterly">كل 3 شهور</option>
+                    <option value="semiannual">كل 6 شهور</option>
+                    <option value="annual">سنوي</option>
+                </select>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button onclick="addContract()" class="success">💾 حفظ العقد</button>
+                    <button onclick="clearContractForm()" class="delete">🗑️ مسح</button>
+                </div>
+            </div>
+            
+            <table id="contractsTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>البداية</th>
+                        <th>النهاية</th>
+                        <th>المبلغ</th>
+                        <th>الفترة</th>
+                        <th>الإجراء</th>
+                    </tr>
+                </thead>
+                <tbody id="contractsList"></tbody>
+            </table>
+        </div>
+        
+        <!-- تبويب التحصيل -->
+        <div id="payments" class="tab-content">
+            <h2>💰 التسجيل والتحصيل</h2>
+            <select id="selectClientPayment" onchange="loadClientPaymentInfo()">
+                <option value="">-- اختر عميل --</option>
+            </select>
+            
+            <div id="contractInfo" style="display: none; margin-top: 15px;">
+                <div class="summary-card">
+                    <h3>معلومات العقد</h3>
+                    <p><strong>البداية:</strong> <span id="infoStartDate"></span></p>
+                    <p><strong>النهاية:</strong> <span id="infoEndDate"></span></p>
+                    <p><strong>المديونية:</strong> <span id="infoTotalDebt"></span></p>
+                    <p><strong>فترة السداد:</strong> <span id="infoPaymentFrequency"></span></p>
+                </div>
+                
+                <div style="padding: 20px; background: #f8f9fa; border-radius: 10px; margin-top: 15px;">
+                    <h3>تسجيل تحصيل جديد</h3>
+                    <input type="date" id="paymentDate" required>
+                    <input type="number" id="paymentAmount" placeholder="المبلغ المحصل" required>
+                    <textarea id="paymentNote" placeholder="ملاحظات" rows="2"></textarea>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button onclick="addPayment()" class="success">💾 تسجيل التحصيل</button>
+                        <button onclick="clearPaymentForm()" class="delete">🗑️ مسح</button>
+                    </div>
+                </div>
+                
+                <table style="margin-top: 20px;">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>المبلغ</th>
+                            <th>ملاحظات</th>
+                            <th>الإجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentsList"></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- تبويب كشف حساب -->
+        <div id="account-statement" class="tab-content">
+            <h2>📊 كشف حساب العميل</h2>
+            <select id="selectClientStatement" onchange="loadClientStatementInfo()">
+                <option value="">-- اختر عميل --</option>
+            </select>
+            <input type="date" id="statementDate" onchange="generateAccountStatement()" style="margin-top: 10px;">
+            
+            <div id="accountSummary" class="summary-card" style="display: none;">
+                <h3>ملخص الحساب</h3>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.2); border-radius: 8px;">
+                    <span>المديونية:</span>
+                    <span id="summaryTotalDebt">0 ريال</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.2); border-radius: 8px;">
+                    <span>المدفوع:</span>
+                    <span id="summaryTotalPaid">0 ريال</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 15px; background: rgba(255,255,255,0.3); border-radius: 8px; font-weight: bold; font-size: 18px;">
+                    <span>المتبقي:</span>
+                    <span id="summaryRemaining">0 ريال</span>
+                </div>
+            </div>
+            
+            <div id="statementDetails" style="display: none;">
+                <h3>تفاصيل الحركات</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>البيان</th>
+                            <th>المديونية</th>
+                            <th>التحصيل</th>
+                            <th>الرصيد</th>
+                        </tr>
+                    </thead>
+                    <tbody id="statementList"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // البيانات
+        let clients = JSON.parse(localStorage.getItem('clients')) || [];
+        let contracts = JSON.parse(localStorage.getItem('contracts')) || [];
+        let payments = JSON.parse(localStorage.getItem('payments')) || [];
+        let installments = JSON.parse(localStorage.getItem('installments')) || [];
+        
+        // الدوال الأساسية
+        function openTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.currentTarget.classList.add('active');
+            
+            if (tabName === 'contracts') updateClientSelect('selectClient');
+            else if (tabName === 'payments') updateClientSelect('selectClientPayment');
+            else if (tabName === 'account-statement') updateClientSelect('selectClientStatement');
+        }
+        
+        function updateClientSelect(selectId) {
+            const select = document.getElementById(selectId);
+            select.innerHTML = '<option value="">-- اختر عميل --</option>';
+            clients.forEach(client => {
+                const option = document.createElement('option');
+                option.value = client.id;
+                option.textContent = client.name;
+                select.appendChild(option);
+            });
+        }
+        
+        function showAddClientForm() {
+            document.getElementById('addClientForm').style.display = 'block';
+        }
+        
+        function hideAddClientForm() {
+            document.getElementById('addClientForm').style.display = 'none';
+        }
+        
+        function addClient() {
+            const name = document.getElementById('clientName').value.trim();
+            if (!name) return alert('يرجى إدخال اسم العميل');
+            
+            const newClient = {
+                id: Date.now().toString(),
+                name,
+                phone: document.getElementById('clientPhone').value.trim(),
+                email: document.getElementById('clientEmail').value.trim(),
+                address: document.getElementById('clientAddress').value.trim()
+            };
+            
+            clients.push(newClient);
+            saveData();
+            displayClients();
+            hideAddClientForm();
+            updateClientSelect('selectClient');
+            updateClientSelect('selectClientPayment');
+            updateClientSelect('selectClientStatement');
+            alert('تم إضافة العميل بنجاح');
+        }
+        
+        function displayClients() {
+            const clientsList = document.getElementById('clientsList');
+            clientsList.innerHTML = '';
+            
+            if (clients.length === 0) {
+                clientsList.innerHTML = '<tr><td colspan="3" style="text-align: center;">لا توجد عملاء</td></tr>';
+                return;
+            }
+            
+            clients.forEach(client => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${client.name}</td>
+                    <td>${client.phone || '-'}</td>
+                    <td><button onclick="deleteClient('${client.id}')" class="delete">🗑️ حذف</button></td>
+                `;
+                clientsList.appendChild(row);
+            });
+        }
+        
+        function deleteClient(clientId) {
+            if (confirm('هل أنت متأكد من الحذف؟')) {
+                clients = clients.filter(client => client.id !== clientId);
+                contracts = contracts.filter(contract => contract.clientId !== clientId);
+                payments = payments.filter(payment => payment.clientId !== clientId);
+                saveData();
+                displayClients();
+                updateClientSelect('selectClient');
+                updateClientSelect('selectClientPayment');
+                updateClientSelect('selectClientStatement');
+            }
+        }
+        
+        function searchClients() {
+            const searchTerm = document.getElementById('clientSearch').value.toLowerCase();
+            const clientsList = document.getElementById('clientsList');
+            clientsList.innerHTML = '';
+            
+            const filteredClients = clients.filter(client => 
+                client.name.toLowerCase().includes(searchTerm)
+            );
+            
+            if (filteredClients.length === 0) {
+                clientsList.innerHTML = '<tr><td colspan="3" style="text-align: center;">لا توجد نتائج</td></tr>';
+                return;
+            }
+            
+            filteredClients.forEach(client => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${client.name}</td>
+                    <td>${client.phone || '-'}</td>
+                    <td><button onclick="deleteClient('${client.id}')" class="delete">🗑️ حذف</button></td>
+                `;
+                clientsList.appendChild(row);
+            });
+        }
+        
+        function addContract() {
+            const clientId = document.getElementById('selectClient').value;
+            const startDate = document.getElementById('contractStartDate').value;
+            const endDate = document.getElementById('contractEndDate').value;
+            const totalDebt = parseFloat(document.getElementById('totalDebt').value);
+            
+            if (!clientId || !startDate || !endDate || !totalDebt) {
+                return alert('يرجى ملء جميع الحقول');
+            }
+            
+            const newContract = {
+                id: Date.now().toString(),
+                clientId,
+                startDate,
+                endDate,
+                totalDebt,
+                paymentFrequency: document.getElementById('paymentFrequency').value
+            };
+            
+            contracts.push(newContract);
+            createInstallmentsForContract(newContract);
+            saveData();
+            loadClientContracts();
+            clearContractForm();
+            alert('تم إضافة العقد بنجاح');
+        }
+        
+        function createInstallmentsForContract(contract) {
+            const paymentDates = calculatePaymentDates(contract);
+            const installmentAmount = contract.totalDebt / paymentDates.length;
+            
+            paymentDates.forEach((date, index) => {
+                installments.push({
+                    id: `${contract.id}_${index}`,
+                    contractId: contract.id,
+                    clientId: contract.clientId,
+                    dueDate: date,
+                    amount: installmentAmount,
+                    paidAmount: 0,
+                    status: 'pending'
+                });
+            });
+        }
+        
+        function calculatePaymentDates(contract) {
+            const dates = [];
+            const startDate = new Date(contract.startDate);
+            const endDate = new Date(contract.endDate);
+            let currentDate = new Date(startDate);
+            
+            while (currentDate <= endDate) {
+                dates.push(currentDate.toISOString().split('T')[0]);
+                switch (contract.paymentFrequency) {
+                    case 'monthly': currentDate.setMonth(currentDate.getMonth() + 1); break;
+                    case 'quarterly': currentDate.setMonth(currentDate.getMonth() + 3); break;
+                    case 'semiannual': currentDate.setMonth(currentDate.getMonth() + 6); break;
+                    case 'annual': currentDate.setFullYear(currentDate.getFullYear() + 1); break;
+                }
+            }
+            return dates;
+        }
+        
+        function loadClientContracts() {
+            const clientId = document.getElementById('selectClient').value;
+            if (!clientId) return;
+            
+            const clientContracts = contracts.filter(contract => contract.clientId === clientId);
+            const contractsList = document.getElementById('contractsList');
+            contractsList.innerHTML = '';
+            
+            if (clientContracts.length === 0) {
+                document.getElementById('contractsTable').style.display = 'none';
+                return;
+            }
+            
+            document.getElementById('contractsTable').style.display = 'table';
+            clientContracts.forEach(contract => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(contract.startDate)}</td>
+                    <td>${formatDate(contract.endDate)}</td>
+                    <td>${contract.totalDebt.toLocaleString()} ريال</td>
+                    <td>${getPaymentFrequencyText(contract.paymentFrequency)}</td>
+                    <td><button onclick="deleteContract('${contract.id}')" class="delete">🗑️ حذف</button></td>
+                `;
+                contractsList.appendChild(row);
+            });
+        }
+        
+        function deleteContract(contractId) {
+            if (confirm('هل أنت متأكد من الحذف؟')) {
+                contracts = contracts.filter(contract => contract.id !== contractId);
+                payments = payments.filter(payment => payment.contractId !== contractId);
+                installments = installments.filter(installment => installment.contractId !== contractId);
+                saveData();
+                loadClientContracts();
+            }
+        }
+        
+        function clearContractForm() {
+            document.getElementById('contractStartDate').value = '';
+            document.getElementById('contractEndDate').value = '';
+            document.getElementById('totalDebt').value = '';
+        }
+        
+        function loadClientPaymentInfo() {
+            const clientId = document.getElementById('selectClientPayment').value;
+            if (!clientId) return;
+            
+            const clientContracts = contracts.filter(contract => contract.clientId === clientId);
+            if (clientContracts.length === 0) {
+                document.getElementById('contractInfo').style.display = 'none';
+                return alert('لا توجد عقود لهذا العميل');
+            }
+            
+            const contract = clientContracts[0];
+            document.getElementById('infoStartDate').textContent = formatDate(contract.startDate);
+            document.getElementById('infoEndDate').textContent = formatDate(contract.endDate);
+            document.getElementById('infoTotalDebt').textContent = contract.totalDebt.toLocaleString() + ' ريال';
+            document.getElementById('infoPaymentFrequency').textContent = getPaymentFrequencyText(contract.paymentFrequency);
+            document.getElementById('contractInfo').style.display = 'block';
+            displayPayments(contract.id);
+        }
+        
+        function displayPayments(contractId) {
+            const contractPayments = payments.filter(payment => payment.contractId === contractId);
+            const paymentsList = document.getElementById('paymentsList');
+            paymentsList.innerHTML = '';
+            
+            if (contractPayments.length === 0) {
+                paymentsList.innerHTML = '<tr><td colspan="4" style="text-align: center;">لا توجد تحصيلات</td></tr>';
+                return;
+            }
+            
+            contractPayments.forEach(payment => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(payment.date)}</td>
+                    <td>${payment.amount.toLocaleString()} ريال</td>
+                    <td>${payment.note || '-'}</td>
+                    <td><button onclick="deletePayment('${payment.id}')" class="delete">🗑️ حذف</button></td>
+                `;
+                paymentsList.appendChild(row);
+            });
+        }
+        
+        function addPayment() {
+            const clientId = document.getElementById('selectClientPayment').value;
+            const date = document.getElementById('paymentDate').value;
+            const amount = parseFloat(document.getElementById('paymentAmount').value);
+            
+            if (!clientId || !date || !amount) {
+                return alert('يرجى ملء جميع الحقول');
+            }
+            
+            const clientContracts = contracts.filter(contract => contract.clientId === clientId);
+            if (clientContracts.length === 0) return alert('لا توجد عقود');
+            
+            const contractId = clientContracts[0].id;
+            const newPayment = {
+                id: Date.now().toString(),
+                clientId,
+                contractId,
+                date,
+                amount,
+                note: document.getElementById('paymentNote').value.trim()
+            };
+            
+            payments.push(newPayment);
+            saveData();
+            displayPayments(contractId);
+            clearPaymentForm();
+            alert('تم تسجيل التحصيل بنجاح');
+        }
+        
+        function deletePayment(paymentId) {
+            if (confirm('هل أنت متأكد من الحذف؟')) {
+                payments = payments.filter(payment => payment.id !== paymentId);
+                saveData();
+                const clientId = document.getElementById('selectClientPayment').value;
+                const clientContracts = contracts.filter(contract => contract.clientId === clientId);
+                if (clientContracts.length > 0) {
+                    displayPayments(clientContracts[0].id);
+                }
+            }
+        }
+        
+        function clearPaymentForm() {
+            document.getElementById('paymentDate').value = '';
+            document.getElementById('paymentAmount').value = '';
+            document.getElementById('paymentNote').value = '';
+        }
+        
+        function loadClientStatementInfo() {
+            const clientId = document.getElementById('selectClientStatement').value;
+            if (!clientId) {
+                document.getElementById('accountSummary').style.display = 'none';
+                document.getElementById('statementDetails').style.display = 'none';
+                return;
+            }
+            generateAccountStatement();
+        }
+        
+        function generateAccountStatement() {
+            const clientId = document.getElementById('selectClientStatement').value;
+            const statementDate = document.getElementById('statementDate').value;
+            if (!clientId || !statementDate) return;
+            
+            const clientContracts = contracts.filter(contract => contract.clientId === clientId);
+            if (clientContracts.length === 0) {
+                document.getElementById('accountSummary').style.display = 'none';
+                document.getElementById('statementDetails').style.display = 'none';
+                return alert('لا توجد عقود');
+            }
+            
+            const contract = clientContracts[0];
+            const contractInstallments = installments.filter(i => i.contractId === contract.id);
+            const contractPayments = payments.filter(p => p.contractId === contract.id && p.date <= statementDate);
+            
+            const totalDebt = contractInstallments
+                .filter(i => i.dueDate <= statementDate)
+                .reduce((sum, i) => sum + i.amount, 0);
+            const totalPaid = contractPayments.reduce((sum, p) => sum + p.amount, 0);
+            const remaining = totalDebt - totalPaid;
+            
+            document.getElementById('summaryTotalDebt').textContent = totalDebt.toLocaleString() + ' ريال';
+            document.getElementById('summaryTotalPaid').textContent = totalPaid.toLocaleString() + ' ريال';
+            document.getElementById('summaryRemaining').textContent = remaining.toLocaleString() + ' ريال';
+            document.getElementById('accountSummary').style.display = 'block';
+            
+            const statementList = document.getElementById('statementList');
+            statementList.innerHTML = '';
+            
+            let balance = 0;
+            const allTransactions = [];
+            
+            contractInstallments
+                .filter(i => i.dueDate <= statementDate)
+                .forEach(installment => {
+                    balance += installment.amount;
+                    allTransactions.push({
+                        date: installment.dueDate,
+                        description: `دفعة ${getInstallmentNumber(installment.id)}`,
+                        debt: installment.amount,
+                        payment: 0,
+                        balance: balance
+                    });
+                });
+            
+            contractPayments.forEach(payment => {
+                balance -= payment.amount;
+                allTransactions.push({
+                    date: payment.date,
+                    description: `سداد ${payment.note ? '- ' + payment.note : ''}`,
+                    debt: 0,
+                    payment: payment.amount,
+                    balance: balance
+                });
+            });
+            
+            allTransactions.sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            allTransactions.forEach(transaction => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(transaction.date)}</td>
+                    <td>${transaction.description}</td>
+                    <td>${transaction.debt > 0 ? transaction.debt.toLocaleString() + ' ريال' : '-'}</td>
+                    <td>${transaction.payment > 0 ? transaction.payment.toLocaleString() + ' ريال' : '-'}</td>
+                    <td>${transaction.balance.toLocaleString()} ريال</td>
+                `;
+                statementList.appendChild(row);
+            });
+            
+            document.getElementById('statementDetails').style.display = 'block';
+        }
+        
+        function getInstallmentNumber(installmentId) {
+            const contractId = installmentId.split('_')[0];
+            const contractInstallments = installments.filter(i => i.contractId === contractId);
+            const index = contractInstallments.findIndex(i => i.id === installmentId);
+            return index + 1;
+        }
+        
+        function getPaymentFrequencyText(frequency) {
+            const texts = {
+                'monthly': 'شهري',
+                'quarterly': 'كل 3 شهور', 
+                'semiannual': 'كل 6 شهور',
+                'annual': 'سنوي'
+            };
+            return texts[frequency] || frequency;
+        }
+        
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('ar-EG');
+        }
+        
+        function saveData() {
+            localStorage.setItem('clients', JSON.stringify(clients));
+            localStorage.setItem('contracts', JSON.stringify(contracts));
+            localStorage.setItem('payments', JSON.stringify(payments));
+            localStorage.setItem('installments', JSON.stringify(installments));
+        }
+        
+        // التهيئة
+        function initApp() {
+            displayClients();
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('paymentDate').value = today;
+            document.getElementById('statementDate').value = today;
+        }
+        
+        window.onload = initApp;
+    </script>
+</body>
+</html>
